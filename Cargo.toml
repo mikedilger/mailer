@@ -1,0 +1,18 @@
+[package]
+name = "mailer"
+version = "0.1.0"
+authors = ["Mike Dilger <mike@optcomp.nz>"]
+license = "MIT"
+
+[dependencies.lettre]
+git = "http://github.com/mikedilger/lettre"
+branch = "dep"
+
+[dependencies.email]
+git = "http://github.com/niax/rust-email"
+commit = "c2c39d32291124176cbffb12a730155792e5147e"
+
+[dependencies]
+time = "0.1"
+rustc-serialize = "0.3"
+hyper = "=0.6.16"
