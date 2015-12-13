@@ -15,4 +15,4 @@ commit = "c2c39d32291124176cbffb12a730155792e5147e"
 [dependencies]
 time = "0.1"
 rustc-serialize = "0.3"
-hyper = "=0.6.16"
+hyper = "0.7"
