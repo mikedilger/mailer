@@ -11,5 +11,5 @@ branch = "dep"
 [dependencies]
 time = "0.1"
 rustc-serialize = "0.3"
-hyper = "0.7"
+hyper = "0.8"
 email = "0.0"
