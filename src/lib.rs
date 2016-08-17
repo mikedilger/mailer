@@ -10,7 +10,6 @@ use std::path::PathBuf;
 use std::net::ToSocketAddrs;
 use std::fs::File;
 use std::io::Read;
-use std::mem;
 
 use email::{MimeMessage, Header, MimeMultipartType};
 use lettre::email::EmailBuilder;
@@ -39,117 +38,90 @@ impl Email {
             plain_body: None,
             html_body: None,
             attachments: Vec::new(),
-            builder: {
-                let builder = EmailBuilder::new();
-                builder
-                    .add_header(Header::new("X-Mailer".to_owned(), "JoistMailer".to_owned()))
-                    .add_header(Header::new("MIME-Version".to_owned(), "1.0".to_owned()))
-            },
+            builder: EmailBuilder::new()
+                .header(Header::new("X-Mailer".to_owned(), "JoistMailer".to_owned()))
+                .header(Header::new("MIME-Version".to_owned(), "1.0".to_owned())),
         }
     }
 
     /// Add a `To` address
     pub fn to<A: ToMailbox>(mut self, address: A) -> Email {
-        self.builder = self.builder.to(address);
+        self.builder.add_to(address);
         self
     }
     /// Add a `To` address
     pub fn add_to<A: ToMailbox>(&mut self, address: A) {
-        // FIXME: annoying upstream (lettre) chain-only API
-        let dummy =  EmailBuilder::new();
-        let actual = mem::replace(&mut self.builder, dummy);
-        mem::replace(&mut self.builder, actual.to(address));
+        self.builder.add_to(address);
     }
 
     /// Add a `From` address
     pub fn from<A: ToMailbox>(mut self, address: A) -> Email {
-        self.builder = self.builder.from(address);
+        self.builder.add_from(address);
         self
     }
     /// Add a `From` address
     pub fn add_from<A: ToMailbox>(&mut self, address: A) {
-        // FIXME: annoying upstream (lettre) chain-only API
-        let dummy = EmailBuilder::new();
-        let actual = mem::replace(&mut self.builder, dummy);
-        mem::replace(&mut self.builder, actual.from(address));
+        self.builder.add_from(address);
     }
 
     /// Add a `Cc` address
     pub fn cc<A: ToMailbox>(mut self, address: A) -> Email {
-        self.builder = self.builder.cc(address);
+        self.builder.add_cc(address);
         self
     }
     /// Add a `Cc` address
     pub fn add_cc<A: ToMailbox>(&mut self, address: A) {
-        // FIXME: annoying upstream (lettre) chain-only API
-        let dummy = EmailBuilder::new();
-        let actual = mem::replace(&mut self.builder, dummy);
-        mem::replace(&mut self.builder, actual.cc(address));
+        self.builder.add_cc(address);
     }
 
     /// Add a `Sender` address
     pub fn sender<A: ToMailbox>(mut self, address: A) -> Email {
-        self.builder = self.builder.sender(address);
+        self.builder.set_sender(address);
         self
     }
     /// Add a `Sender` address
-    pub fn add_sender<A: ToMailbox>(&mut self, address: A) {
-        // FIXME: annoying upstream (lettre) chain-only API
-        let dummy = EmailBuilder::new();
-        let actual = mem::replace(&mut self.builder, dummy);
-        mem::replace(&mut self.builder, actual.sender(address));
+    pub fn set_sender<A: ToMailbox>(&mut self, address: A) {
+        self.builder.set_sender(address);
     }
 
     /// Add a `Reply-to` address
     pub fn reply_to<A: ToMailbox>(mut self, address: A) -> Email {
-        self.builder = self.builder.reply_to(address);
+        self.builder.add_reply_to(address);
         self
     }
     /// Add a `Reply-to` address
     pub fn add_reply_to<A: ToMailbox>(&mut self, address: A) {
-        // FIXME: annoying upstream (lettre) chain-only API
-        let dummy = EmailBuilder::new();
-        let actual = mem::replace(&mut self.builder, dummy);
-        mem::replace(&mut self.builder, actual.reply_to(address));
+        self.builder.add_reply_to(address);
     }
 
     /// Add a header.  Use this for headers not handled by `Email` directly.
     pub fn header<H: ToHeader>(mut self, header: H) -> Email {
-        self.builder = self.builder.add_header(header);
+        self.builder.add_header(header);
         self
     }
     /// Add a header.  Use this for headers not handled by `Email` directly.
     pub fn add_header<H: ToHeader>(&mut self, header: H) {
-        // FIXME: annoying upstream (lettre) chain-only API
-        let dummy = EmailBuilder::new();
-        let actual = mem::replace(&mut self.builder, dummy);
-        mem::replace(&mut self.builder, actual.add_header(header));
+        self.builder.add_header(header);
     }
 
     /// Add a date header
     pub fn date(mut self, date: &Tm) -> Email {
-        self.builder = self.builder.date(date);
+        self.builder.set_date(date);
         self
     }
     /// Add a date header
-    pub fn add_date(&mut self, date: &Tm) {
-        // FIXME: annoying upstream (lettre) chain-only API
-        let dummy = EmailBuilder::new();
-        let actual = mem::replace(&mut self.builder, dummy);
-        mem::replace(&mut self.builder, actual.date(date));
+    pub fn set_date(&mut self, date: &Tm) {
+        self.builder.set_date(date);
     }
 
     /// Add a subject header
     pub fn subject(mut self, subject: &str) -> Email {
-        self.builder = self.builder.subject(subject);
+        self.builder.set_subject(subject);
         self
     }
     /// Add a subject header
-    pub fn add_subject(&mut self, subject: &str) {
-        // FIXME: annoying upstream (lettre) chain-only API
-        let dummy = EmailBuilder::new();
-        let actual = mem::replace(&mut self.builder, dummy);
-        mem::replace(&mut self.builder, actual.subject(subject));
+    pub fn set_subject(&mut self, subject: &str) {
+        self.builder.set_subject(subject);
     }
 
     /// Set a plain-text body
@@ -284,7 +256,8 @@ impl Email {
     }
 
     pub fn send<A: ToSocketAddrs>(&self, smtp_address: A, hello_name: &str,
-                                  username: &str, password: &str)
+                                  username: &str, password: &str,
+                                  auth_mechanism: Mechanism)
                                   -> Result<(), Error>
     {
         let mime_message = try!(self.build_mime_message());
@@ -297,21 +270,17 @@ impl Email {
 
         // Add headers from the mime_message
         for header in mime_message.headers.iter() {
-            builder.insert_header(header.clone());
+            builder.add_header(header.clone());
         }
 
-        let email = match builder.build() {
-            Ok(e) => e,
-            Err(s) => return Err( Error::BuilderError( s.to_owned() ) ),
-        };
+        let email = try!(builder.build());
 
         let mailer = try!(SmtpTransportBuilder::new(smtp_address));
 
         let mut mailer = mailer
             .hello_name(hello_name)
             .credentials(username, password)
-            .authentication_mechanisms(vec![])
-            .authentication_mechanisms(vec![Mechanism::Plain, Mechanism::CramMd5])
+            .authentication_mechanism(auth_mechanism)
             .security_level(SecurityLevel::Opportunistic)
             .smtp_utf8(true)
             .build();

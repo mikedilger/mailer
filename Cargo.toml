@@ -5,8 +5,10 @@ authors = ["Mike Dilger <mike@optcomp.nz>"]
 license = "MIT"
 
 [dependencies.lettre]
-git = "http://github.com/mikedilger/lettre"
-branch = "dep"
+git = "http://github.com/lettre/lettre"
+rev = "86c45f13c3a978a6d18ef338c0cbb9a26ab78b55"
+# git = "http://github.com/mikedilger/lettre"
+# branch = "dep"
 
 [dependencies]
 time = "0.1"
