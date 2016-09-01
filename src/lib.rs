@@ -14,7 +14,8 @@ use std::io::Read;
 use email::{MimeMessage, Header, MimeMultipartType};
 use lettre::email::EmailBuilder;
 use lettre::email::{ToMailbox, ToHeader};
-use lettre::transport::smtp::{SecurityLevel, SmtpTransportBuilder};
+use lettre::transport::smtp::SmtpTransportBuilder;
+pub use lettre::transport::smtp::SecurityLevel;
 pub use lettre::transport::smtp::authentication::Mechanism;
 use lettre::transport::EmailTransport;
 use time::Tm;
@@ -257,6 +258,7 @@ impl Email {
 
     pub fn send<A: ToSocketAddrs>(&self, smtp_address: A, hello_name: &str,
                                   username: &str, password: &str,
+                                  security_level: SecurityLevel,
                                   auth_mechanism: Mechanism)
                                   -> Result<(), Error>
     {
@@ -281,7 +283,7 @@ impl Email {
             .hello_name(hello_name)
             .credentials(username, password)
             .authentication_mechanism(auth_mechanism)
-            .security_level(SecurityLevel::Opportunistic)
+            .security_level(security_level)
             .smtp_utf8(true)
             .build();
 
