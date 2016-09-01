@@ -15,7 +15,7 @@ use email::{MimeMessage, Header, MimeMultipartType};
 use lettre::email::EmailBuilder;
 use lettre::email::{ToMailbox, ToHeader};
 use lettre::transport::smtp::{SecurityLevel, SmtpTransportBuilder};
-use lettre::transport::smtp::authentication::Mechanism;
+pub use lettre::transport::smtp::authentication::Mechanism;
 use lettre::transport::EmailTransport;
 use time::Tm;
 
