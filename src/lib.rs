@@ -326,10 +326,10 @@ mod tests {
         email.add_to( "callum@efx.co.nz" );
         email.add_from( "mailer@onestart.nz" );
         //email.add_cc( "copy@onestart.nz" );
-        email.add_sender( "mailer@onestart.nz" );
+        email.set_sender( "mailer@onestart.nz" );
         let now: Tm = time::now();
-        email.add_date( &now );
-        email.add_subject( "This is a test from OneStart" );
+        email.set_date( &now );
+        email.set_subject( "This is a test from OneStart" );
         email.set_plain_body( "This is a test email
 You should ignore it.");
         email.set_html_body( "<hr><p>This is a <b>test</b> email<br>
