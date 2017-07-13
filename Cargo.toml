@@ -4,11 +4,9 @@ version = "0.2.0"
 authors = ["Mike Dilger <mike@optcomp.nz>"]
 license = "MIT"
 
-[dependencies.lettre]
-version = "0.6"
-
 [dependencies]
 time = "0.1"
 rustc-serialize = "0.3"
-hyper = "0.9"
+hyper = "0.10"
 email = "0.0"
+lettre = "0.6.2"
