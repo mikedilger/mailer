@@ -5,7 +5,7 @@ use std::error::Error as StdError;
 use std::io;
 use std::fmt;
 use lettre::email::error::Error as EmailError;
-use lettre::transport::error::Error as TransportError;
+use lettre::transport::smtp::error::Error as TransportError;
 
 #[derive(Debug)]
 pub enum Error {
